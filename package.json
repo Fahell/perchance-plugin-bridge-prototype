@@ -1,0 +1,17 @@
+{
+  "name": "perchance-plugin-bridge-prototype",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Observable Vite bundle for learning Perchance AI plugin integration.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.2"
+  }
+}

@@ -1,0 +1,112 @@
+🖋️📜 AI Text Plugin 📖🤖 https://perchance.org/ai-text-plugin
+This plugin allows you generate text with AI. It uses a Llama-based AI model. It doesn't run on your actual device like other Perchance plugins because it requires too much computational power (and would require a many-gigabyte download), so it runs on server GPUs, which means it costs me money to run. For that reason, this plugin is funded with ads, so an ad will appear on your generator for non-logged-in users if you import this plugin. The ad will appear at the bottom of the screen like this. The ad will go away if you remove the plugin, of course.
+
+To use this plugin, you'll first need to import it by adding this line to your lists editor:
+
+ai = {import:ai-text-plugin}
+And now try putting this in your lists editor:
+
+character
+  {mech|demon|cyberpunk} {warrior|minion|samurai}
+
+place
+  a retropunk distopia
+  a small village
+  a mountainous region
+  an underwater cavern
+
+season
+  winter
+  summer
+
+poemPrompt
+  instruction = Write a haiku about a [character] in [place] during [season].
+
+output
+  [ai(poemPrompt)]
+Here's an example generator to start you off, and here's a live version of the above code, running on this page:
+
+Steel lungs breathe salt brine,
+Deep cave glows while surface burns,
+Cold gear, summer heat.
+
+randomize
+
+You can hover your mouse over the little icon that appears at the end of the text to see the instruction that was used to generate it.
+
+Here's an example where we give the AI an instruction, but we also ensure that the response starts with "It was the night before Christmas in":
+
+storyPrompt
+  instruction = Write a {spooky|silly} story involving {a} {import:object}.
+  startWith = It was the night before Christmas in
+Here's a simple example that uses startWith.
+
+If you pass some text directly into this plugin, it'll be interpreted as the instruction:
+
+output
+  [ai("Explain quantum field theory to a toddler.")]
+Check out some of these example generators to see different ways to use this plugin, and learn about some advanced features:
+
+Fantasy Character - Description + image using onFinish and text-to-image-plugin.
+Prompt Tester - Easily test your prompts. Also demonstrates outputTo property.
+AI Chat - Design and chat with an AI character. Uses stopSequences and onFinish.
+Render Example - Displays 'actions' like *smiles smugly* into smiles smugly using render.
+Two Character Chat - Makes 2 random game characters chat with one another.
+Short Story - Generates a short story with pictures. Uses render in an interesting way.
+Story Outline - Generates a story outline (plot, characters, etc.) with a cover image.
+Text-to-Speech - Streams generated text into the text-to-speech-plugin.
+Story Writing Helper - Shows use of onChunk and stop().
+Multi-Choice Text Adventure - Story where each step has several actions to choose from.
+Hierarchical World Explorer - Similar to the nested-plugin.
+User Input Example - Take some user input as part of the writing instructions for the AI.
+You can make instruction and/or startWith into a list, and then add $output = [this.joinItems("\n")] to the top of the list to join all the lines together like in this example:
+
+catGymPrompt
+  startWith
+    cat: i umm... *muffled heavy breathing* i am a cat, and i'm calling to ask about your tuesday pilates classes
+    kind staff member: sure! i can help you with that, can-
+    cat:
+    $output = [this.joinItems("\n")] // <-- this joins all the above lines together instead of selecting a random one
+Note: You might be accustomed to using this.joinItems("<br>"), but in this case \n (which means newline) is probably better since the AI is trained primarily on text, rather than HTML (but it definitely can generate HTML if you need that!). I've made it so \n does actually create a line break in the visual display of the AI's outputs (most HTML element types don't do this by default).
+
+Here's how to add a style option to adjust the visual display of the output text:
+
+marioAffirmationsPrompt
+  instruction = Be Mario, and give me 3 positive affirmations with Mario's accent.
+  style = text-align:left; color:blue; font-weight:bold; border:2px solid red; display:block; max-width:600px; margin:0 auto; padding:0.5rem;
+Prompt Options:
+
+You can see a bunch of the options below at play in the example generators listed above, and in this sandbox demo made by wthit56.
+
+instruction - Your instruction to the AI on what to write.
+startWith - The text that you want the AI's writing to start with.
+stopSequences - The AI will stop writing "naturally" when it thinks it's finished, but you can use stopSequences to provide a list of words/phrases that should make the AI stop if it writes them.
+hideStartWith - set this equal to true if you don't want the startWith text that you specified to actually get displayed. I.e. only the text after that will get displayed. You could also use a custom render(data) function (explained below) to achieve this.
+outputTo - Use this to tell the plugin to output the AI's response into a specific element, based on that element's ID. If you had an element with id="myCoolElement" in the HTML editor, then you'd write outputTo = [myCoolElement] to get the AI to output to that element. By default the AI's text will be put wherever you write [ai(...)].
+onChunk(data) - the code you put in this will run after every chunk (which is usually a word, or part of a word). See this generator for an example that uses it. You can access data.textChunk and data.fullTextSoFar and data.isFromStartWith (since the startWith text, if specified, is always the first chunk).
+onStart(data) - the code you put in this will run at the start of the generation process. You can access the inputs being used with data.inputs.instruction, data.inputs.startWith, etc.
+onFinish(data) - the code you put in this will run at the end of the generation process. You can access the final text with data.text, and note that this includes the startWith text, if you specified any. If you want the output text excluding the startWith, then you can access that via data.generatedText. If you didn't specify any startWith then data.generatedText and data.text will be the same. You can use data.liveResponseText at any time to get the current text including any edits that the user has made using the edit button at the end of the response.
+render(data) - the code you put in this will run after every chunk, and value that you return from this function is what actually gets displayed. This allows you to transform what the AI writes into something else - e.g. convert asterisks around text to bold or italic HTML tags. data.text contains the text so far and data.isPartial tells you whether the text is partial/incomplete (i.e. the AI is still generating). Here's a basic example, and here's one that uses data.isPartial.
+endButtons - add endButtons = none to your prompt options if you don't want the edit/continue buttons to show at the end of the response.
+Note that instruction, startWith, and stopSequences can all be functions if you want. You return the value that you want to use. See this generator for an example where we use it to prevent evaluation of the square and curly blocks in the given instruction and startWith.
+There are some other features not listed here, but they're used in the examples list above. If there's a feature that you want, but can't find, feel free to ask for it on the community forum.
+Here's an example of using it in JavaScript function where we console.log each chunk, and also the final generatedText:
+
+async start() =>
+  let result = await ai({
+    instruction: "write a poem",
+    onChunk: function(data) {
+      console.log("chunk:", data);
+    },
+  });
+  console.log(result.generatedText, result);
+The result.text includes the startWith text, whereas result.generatedText doesn't, but in the above example they're equivalent because we didn't specify a startWith. Also note that result is also actually a String which is equivalent to result.text. So you can just write e.g. foo.innerHTML = result instead of foo.innerHTML = result.text.
+
+Notes:
+
+Text prompt/response data is not stored on the server - see this post for more info.
+If you'd like to play around with running AI text generation models on your own machine ("locally"), then r/LocalLLama is a good community to join.
+Each user can only have a few concurrent server requests, so if you have lots of completions pending on one page, they'll queue up.
+The model may produce NSFW/adult-themed content if instructed/prompted with NSFW/adult-themed terms. You should treat this a bit like a Google search - ask for inappropriate stuff, and you'll probably get inappropriate stuff. Please prompt responsibly. If the AI is producing inappropriate content without being prompted, you can try adding a sentence to your instruction telling it not to do that.
+The 19th day of every month is observed as 'Ad-viewer Appreciation Day' in the Perchance community. On this day we pay our respects to the non-logged-in users who fund the GPU servers by viewing ads on generators that import AI-based plugins. Logged-in users are encouraged to spare a moment for these anonymous benefactors, wishing for them a month of relevant and interesting ads, and thanking them for their tolerance of increased browser tab memory usage, and their indirect but valuable contribution to the Perchance community via the digital attention economy. May their mobile game ads not be too sus, and may the gameplay reflect the real gameplay even if only abstractly 🕯️
+Check out more plugins at perchance.org/plugins
