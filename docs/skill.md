@@ -42,8 +42,10 @@ URL: https://perchance.org/{generator-id}
 
 ### Panel 1 — Listas/Sintaxe (top-left)
 - Dark code editor with line numbers
-- Where plugins are imported: `ai = {import:ai-text-plugin}`
-- Perchance function syntax goes here
+- For this project, used only for plugin imports:
+  - `ai = {import:ai-text-plugin}`
+  - `image = {import:text-to-image-plugin}`
+- Application logic and UI do not go here.
 
 ### Panel 2 — Preview (top-right)
 - White area, renders generator in an iframe
@@ -111,7 +113,7 @@ async def eval_iframe(target_id, expression):
 
 ### How Plugins Connect to Code
 
-**Panel 1 (Listas) — Importa plugins:**
+**Panel 1 (Lists) — imports only; no application lists:**
 ```
 ai = {import:ai-text-plugin}
 image = {import:text-to-image-plugin}
