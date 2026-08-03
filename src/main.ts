@@ -20,6 +20,7 @@ const MAX_LOG_ENTRIES = 80;
 
 const state = {
   events: [] as string[],
+  lastDiagnostics: "",
 };
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -207,7 +208,7 @@ function appTemplate(): string {
           <label>instruction<textarea id="text-instruction">Write a concise, imaginative micro-story about a lighthouse that receives a message from the future.</textarea></label>
           <label>startWith<input id="text-start" value="The message began: "></label>
           <div class="row">
-            <label>stopSequences<input id="text-stop" value="\n\n"></label>
+            <label>stopSequences (separe por |)<input id="text-stop" value="END_OF_STORY"></label>
             <label>style CSS<input id="text-style" value="text-align:left; display:block;"></label>
           </div>
           <label class="check"><input id="text-hide-start" type="checkbox"> hideStartWith</label>
@@ -290,7 +291,7 @@ async function generateText(): Promise<void> {
   }
 
   const startWith = getTextValue("text-start");
-  const stopSequences = getTextValue("text-stop").split("\\n").filter(Boolean);
+  const stopSequences = getTextValue("text-stop").split("|").map((value) => value.trim()).filter(Boolean);
   const instruction = getTextValue("text-instruction");
   const style = getTextValue("text-style");
   const hideStartWith = document.querySelector<HTMLInputElement>("#text-hide-start")?.checked ?? false;
@@ -419,7 +420,12 @@ function refreshDiagnostics(): void {
   if (documentElement) documentElement.textContent = window.location.href;
   if (sourceElement) sourceElement.textContent = lookup.source;
   if (errorElement) errorElement.textContent = lookup.error ? `diagnostic: ${lookup.error}` : "diagnostic: root resolved";
-  emit("diagnostics", { root: Boolean(lookup.root), source: lookup.source, ai: Boolean(ai), image: Boolean(image), error: lookup.error });
+  const diagnostics = { root: Boolean(lookup.root), source: lookup.source, ai: Boolean(ai), image: Boolean(image), error: lookup.error ?? "" };
+  const diagnosticsKey = JSON.stringify(diagnostics);
+  if (diagnosticsKey !== state.lastDiagnostics) {
+    state.lastDiagnostics = diagnosticsKey;
+    emit("diagnostics", diagnostics);
+  }
 }
 
 function mount(): void {
